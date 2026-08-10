@@ -1,0 +1,15 @@
+{
+  "experiment_id": "",
+  "status": "pending",
+  "decision": "",
+  "model_type": "sbert",
+  "metrics": {
+    "train_loss": null,
+    "val_loss": null,
+    "accuracy": null,
+    "f1_score": null
+  },
+  "comparison_to_previous_best": "",
+  "trained_on": "colab",
+  "next_action": ""
+}

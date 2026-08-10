@@ -1,0 +1,10 @@
+# PyTorch Models
+*.pth
+*.pt
+*.ckpt
+
+# Model Output Directories
+saved_models/
+
+# Dataset Directory
+data/
