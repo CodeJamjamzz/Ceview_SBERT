@@ -13,15 +13,16 @@ The model expects the following input text fields (which may be concatenated or 
 - **List of Services**: Specific services or amenities provided.
 
 ## Outputs
-The model outputs a score from `0.0` to `1.0` for each of the following 8 classes:
-1. **Coastal & Island** (Tourism centered around the ocean, beaches, islands, or marine activities)
-2. **Adventure & Nature** (Tourism centered around outdoor nature, exploration, physical activity, or adventure)
-3. **Cultural & Heritage** (Tourism centered around history, culture, traditions, religion, art, or heritage)
-4. **Theme Parks / Entertainment** (Purpose-built entertainment destinations focused on amusement, rides, games, or shows)
-5. **Urban & City** (Tourism centered around cities, modern urban environments, shopping, and city entertainment)
-6. **Culinary & Gastronomy** (Tourism centered around food, drinks, dining, local cuisine, or culinary experiences)
-7. **Accommodation & Staycation** (Tourism where lodging/staying at the property is the primary tourism product)
-8. **OUT_OF_SCOPE**: The business/destination does not meaningfully belong to any of the 7 categories.
+The model outputs an array of 8 float values (scores from `0.0` to `1.0`), where each index precisely corresponds to one of the following 8 classes:
+
+1. **Index 0: Coastal & Island** (Tourism centered around the ocean, beaches, islands, or marine activities)
+2. **Index 1: Adventure & Nature** (Tourism centered around outdoor nature, exploration, physical activity, or adventure)
+3. **Index 2: Cultural & Heritage** (Tourism centered around history, culture, traditions, religion, art, or heritage)
+4. **Index 3: Theme Parks / Entertainment** (Purpose-built entertainment destinations focused on amusement, rides, games, or shows)
+5. **Index 4: Urban & City** (Tourism centered around cities, modern urban environments, shopping, and city entertainment)
+6. **Index 5: Culinary & Gastronomy** (Tourism centered around food, drinks, dining, local cuisine, or culinary experiences)
+7. **Index 6: Accommodation & Staycation** (Tourism where lodging/staying at the property is the primary tourism product)
+8. **Index 7: OUT_OF_SCOPE**: The business/destination does not meaningfully belong to any of the 7 categories.
 
 *Multiple categories can be selected when their scores exceed a chosen threshold.*
 

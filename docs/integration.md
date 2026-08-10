@@ -1,7 +1,11 @@
 # Integration Contract
 
 ## Division of Responsibility
-- **Model**: Converts input text (description, value prop, services) into an array/dictionary of 8 scores (7 categories + 1 OUT_OF_SCOPE).
+- **Model**: Converts input text (description, value prop, services) into an array/dictionary of 8 scores (7 categories + 1 OUT_OF_SCOPE). The `predict_business` function returns a dictionary where keys are the category names and values are the boolean flags indicating if they exceed the threshold.
+
+> [!NOTE]
+> Under the hood, the model returns a 1x8 tensor. The backend should map these indices strictly: `0`=Coastal & Island, `1`=Adventure & Nature, `2`=Cultural & Heritage, `3`=Theme Parks / Entertainment, `4`=Urban & City, `5`=Culinary & Gastronomy, `6`=Accommodation & Staycation, and `7`=OUT_OF_SCOPE.
+
 - **Backend**: Validates the input before sending it to the model. Applies the threshold to the scores to determine the final selected categories. Handles API errors and rate limits.
 - **Training**: Training does *not* happen in the backend. The backend only uses a frozen, exported version of the model for inference.
 
