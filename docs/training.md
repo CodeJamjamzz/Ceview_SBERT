@@ -23,7 +23,7 @@ graph LR
 **Google Colab Setup:**
 1. Clone this repository into the Colab environment.
 2. Ensure you have the `data/` folder populated with your JSON datasets.
-3. Install dependencies: `pip install -r requirements.txt` (or manually install `torch`, `transformers`, `scikit-learn`).
+3. Install dependencies: `pip install -r requirements.txt` (or manually install `torch`, `transformers`, `scikit-learn`, `wandb`).
 
 ### Data Preprocessing
 Before the training loop begins, `model/preprocessing.py` will:
@@ -43,17 +43,37 @@ Before the training loop begins, `model/preprocessing.py` will:
 
 After preprocessing, the `TourismDataset` serves these tokenized inputs and labels to the training loop.
 
+### Dataset Preparation and Class Imbalance
+The dataset contains approximately 1,383 examples with the following class distribution:
+- Accommodation: 423
+- Culinary: 346
+- Adventure: 298
+- Urban: 285
+- Coastal: 282
+- Cultural: 274
+- OUT_OF_SCOPE: 226
+- Theme Parks: 155
+
+This reveals an imbalance ratio of ~2.73 (423 ÷ 155), which constitutes a **mild/moderate imbalance** (ratio between 2:1 and 5:1). Because the imbalance is not severe, it is not necessary to artificially duplicate (oversample) or remove (undersample) data to make classes strictly equal.
+
+Instead, the recommended approach is to perform a **stratified 80/20 split**. A stratified split ensures that each class maintains roughly the same proportion in both the training (~1,106 examples) and validation (~277 examples) sets. During model evaluation, the F1-score for each class will serve as the primary indicator of how well the model handles the imbalance.
+
 ## Evaluation
 The `evaluate.py` script computes **Accuracy**, **Macro F1-Score**, and **Loss** to evaluate how well the model predicts across all 8 classes concurrently (using a `0.5` threshold).
 
-## Logging Requirements
-Every training run in Colab must log the following fields to ensure reproducibility and track progress:
-1. **Experiment ID**: A unique identifier (e.g., date-time hash).
-2. **Git Commit**: The commit hash of the code used for training.
-3. **Config**: Hyperparameters used (learning rate, batch size, epochs, threshold).
-4. **Dataset Info**: Version or size of the training/validation data.
-5. **Metrics**: Train/val/test loss, accuracy, F1 score (macro/micro for multi-label).
-6. **Decision**: Keep / Reject / Deploy.
-7. **Notes**: Any observations from the run.
+## Logging & Experiment Tracking
+Every training run must be logged to **Weights & Biases (W&B)** and also summarized locally.
 
-These results should be summarized and saved to `experiments/latest.json`.
+### 1. Weights & Biases (W&B) Tracking
+During training in Colab, the following metrics and configurations are automatically tracked live:
+- **Hyperparameters (Config)**: learning rate, epochs, device, model architecture.
+- **Epoch-level Metrics**: train loss, val loss, val accuracy, val F1 macro score.
+- **Model gradients/parameters**: tracked using `wandb.watch()`.
+
+### 2. Local Experiment Summary
+After completion, a summary must be saved to `experiments/latest.json` containing:
+1. **Experiment ID**: A unique identifier (date-time hash).
+2. **Status**: Training completion status.
+3. **Decision**: Keep / Reject.
+4. **Metrics**: Best loss, accuracy, and F1 score.
+5. **Trained on**: Environment name (e.g., `colab`).

@@ -7,4 +7,4 @@ The model is built using **PyTorch** and takes a business description, unique va
 
 ## Getting Started
 See `docs/model.md` for the core model contract.
-See `docs/training.md` for how to train the model using Google Colab.
+See `docs/training.md` for how to train the model using Google Colab and details on **dataset preparation and class imbalance strategies**.

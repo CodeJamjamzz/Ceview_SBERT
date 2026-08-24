@@ -107,6 +107,43 @@ def load_data_from_json(data_dir: str):
             
     return all_data
 
+def analyze_data(data_dir: str = "data"):
+    """
+    Analyzes the dataset and returns statistics on total samples, 
+    class distribution, and missing fields.
+    """
+    data_list = load_data_from_json(data_dir)
+    total_samples = len(data_list)
+    
+    class_counts = {category: 0 for category in TOURISM_CATEGORIES}
+    missing_fields = {"description": 0, "uvp": 0, "services": 0, "labels": 0}
+    
+    for item in data_list:
+        labels = item.get("labels", [])
+        if not labels:
+            class_counts["OUT_OF_SCOPE"] += 1
+        else:
+            for label in labels:
+                if label in class_counts:
+                    class_counts[label] += 1
+                else:
+                    class_counts["OUT_OF_SCOPE"] += 1
+                    
+        if not item.get("description"):
+            missing_fields["description"] += 1
+        if not item.get("uvp"):
+            missing_fields["uvp"] += 1
+        if not item.get("services"):
+            missing_fields["services"] += 1
+        if "labels" not in item:
+            missing_fields["labels"] += 1
+            
+    return {
+        "total_samples": total_samples,
+        "class_counts": class_counts,
+        "missing_fields": missing_fields
+    }
+
 def get_dataloaders(data_dir="data", batch_size=16, shuffle=True):
     """
     Helper function to load data and return a PyTorch DataLoader.

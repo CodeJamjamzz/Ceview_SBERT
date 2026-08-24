@@ -12,3 +12,13 @@ data/
 # Agent Rules
 AGENTS.md
 BLOCKERS.md
+
+# Environment Variables
+.env
+
+# Weights & Biases
+wandb/
+
+# Python Cache
+__pycache__/
+*.pyc
