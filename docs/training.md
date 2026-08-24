@@ -56,8 +56,12 @@ The dataset contains approximately 1,383 examples with the following class distr
 
 This reveals an imbalance ratio of ~2.73 (423 ÷ 155), which constitutes a **mild/moderate imbalance** (ratio between 2:1 and 5:1). Because the imbalance is not severe, it is not necessary to artificially duplicate (oversample) or remove (undersample) data to make classes strictly equal.
 
-Instead, the recommended approach is to perform a **stratified 80/20 split**. A stratified split ensures that each class maintains roughly the same proportion in both the training (~1,106 examples) and validation (~277 examples) sets. During model evaluation, the F1-score for each class will serve as the primary indicator of how well the model handles the imbalance.
+Instead, the recommended and implemented approach is to perform a **stratified 80/10/10 split (Train/Validation/Test)**. 
+- **Train (80% / ~1,106 examples):** Used to actually teach the model.
+- **Validation (10% / ~138 examples):** Used during training to monitor progress and tune hyperparameters.
+- **Test (10% / ~138 examples):** A completely held-out set used only at the very end to provide an unbiased evaluation of the model's performance.
 
+A stratified split ensures that each class maintains roughly the same proportion across all three sets, ensuring that even the smallest classes have representation in the Test set.
 ## Evaluation
 The `evaluate.py` script computes **Accuracy**, **Macro F1-Score**, and **Loss** to evaluate how well the model predicts across all 8 classes concurrently (using a `0.5` threshold).
 

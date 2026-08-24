@@ -8,6 +8,7 @@ import glob
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
+from sklearn.model_selection import train_test_split
 
 # Explicitly map categories to indices
 TOURISM_CATEGORIES = [
@@ -152,6 +153,46 @@ def get_dataloaders(data_dir="data", batch_size=16, shuffle=True):
     dataset = TourismDataset(data_list)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
     return dataloader
+
+def get_stratified_dataloaders(json_file_path, batch_size=16):
+    """
+    Reads a consolidated JSON file and performs an 80/10/10 stratified split.
+    Returns (train_loader, val_loader, test_loader).
+    """
+    with open(json_file_path, 'r', encoding='utf-8') as f:
+        data_list = json.load(f)
+        
+    # Create proxy labels for stratification (using the first label in the list)
+    proxy_labels = []
+    for item in data_list:
+        labels = item.get("labels", [])
+        if labels and len(labels) > 0:
+            # We sort them to ensure determinism, but picking the first is usually fine
+            proxy_labels.append(sorted(labels)[0])
+        else:
+            proxy_labels.append("OUT_OF_SCOPE")
+            
+    # Split 1: 80% Train, 20% Temp (Val + Test)
+    train_data, temp_data, train_proxy, temp_proxy = train_test_split(
+        data_list, proxy_labels, test_size=0.2, stratify=proxy_labels, random_state=42
+    )
+    
+    # Split 2: 50% Val, 50% Test (from the 20% Temp) -> 10% / 10% of total
+    val_data, test_data = train_test_split(
+        temp_data, test_size=0.5, stratify=temp_proxy, random_state=42
+    )
+    
+    # Create Datasets
+    train_dataset = TourismDataset(train_data)
+    val_dataset = TourismDataset(val_data)
+    test_dataset = TourismDataset(test_data)
+    
+    # Create DataLoaders
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, val_loader, test_loader
 
 if __name__ == "__main__":
     # Test script to verify the logic works
