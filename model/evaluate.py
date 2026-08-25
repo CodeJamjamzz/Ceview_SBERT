@@ -33,8 +33,8 @@ def evaluate_model(model, dataloader, criterion, device="cpu"):
             loss = criterion(logits, targets)
             total_loss += loss.item()
             
-            # Since this is multi-label, apply sigmoid and threshold
-            preds = (torch.sigmoid(logits) > 0.5).float()
+            # Since the model applies Sigmoid internally now, just threshold the output
+            preds = (logits > 0.5).float()
             
             all_targets.append(targets.cpu())
             all_preds.append(preds.cpu())
