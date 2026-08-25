@@ -20,9 +20,10 @@ class TourismClassifier(nn.Module):
         # Classification head
         self.classifier = nn.Sequential(
             nn.Linear(concat_dim, hidden_size),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Dropout(0.1),
-            nn.Linear(hidden_size, num_classes)
+            nn.Linear(hidden_size, num_classes),
+            nn.Sigmoid()
         )
 
     def mean_pooling(self, model_output, attention_mask):
@@ -59,8 +60,8 @@ class TourismClassifier(nn.Module):
         # Pass through the classification hidden layers
         logits = self.classifier(concatenated)
         
-        # Note: Sigmoid is not applied here because we are using BCEWithLogitsLoss during training.
-        # Inference scripts will apply torch.sigmoid(logits) to get scores.
+        # Note: Sigmoid is applied here as this is the second attempt model architecture.
+        # The output is now probabilities (0 to 1).
         return logits
 
 def get_model():

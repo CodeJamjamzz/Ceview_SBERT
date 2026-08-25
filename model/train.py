@@ -12,7 +12,7 @@ import wandb
 from .evaluate import evaluate_model
 from .model import get_model
 
-def setup_wandb(learning_rate, num_epochs, device):
+def setup_wandb(learning_rate, num_epochs, device, patience):
     """
     Sets up Weights & Biases login and initialization.
     Loads API key from .env if present.
@@ -44,28 +44,32 @@ def setup_wandb(learning_rate, num_epochs, device):
             "learning_rate": learning_rate,
             "epochs": num_epochs,
             "device": device,
-            "architecture": "SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Linear(1152, 512) -> ReLU -> Dropout(0.1) -> Linear(512, 8)"
+            "optimizer": "Adam",
+            "loss_function": "BCELoss",
+            "early_stopping_patience": patience,
+            "architecture": "SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Concatenate -> Linear(1152, 512) -> GELU -> Dropout(0.1) -> Linear(512, 8) -> Sigmoid (Second Attempt)"
         }
     )
     return run
 
-def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0.001, device="cpu"):
-    print(f"Starting training on {device} for {num_epochs} epochs...")
+def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0.001, device="cpu", patience=5):
+    print(f"Starting training on {device} for {num_epochs} epochs with patience {patience}...")
     model = get_model().to(device)
     
     # Initialize Weights & Biases run
-    wandb_run = setup_wandb(learning_rate, num_epochs, device)
+    wandb_run = setup_wandb(learning_rate, num_epochs, device, patience)
     
     # Track the model architecture and gradients
     if wandb_run:
         wandb.watch(model, log="all")
     
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     
     best_val_loss = float('inf')
     best_acc = 0.0
     best_f1 = 0.0
+    epochs_no_improve = 0
     
     for epoch in range(num_epochs):
         model.train()
@@ -113,12 +117,23 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
             best_val_loss = val_loss
             best_acc = val_acc
             best_f1 = val_f1
+            epochs_no_improve = 0
             
             # Save the best model weights so you can download/upload them later
             os.makedirs('saved_models', exist_ok=True)
             torch.save(model.state_dict(), "saved_models/best_model.pth")
             print("New best model saved to saved_models/best_model.pth!")
+        else:
+            epochs_no_improve += 1
+            print(f"Early stopping counter: {epochs_no_improve} out of {patience}")
+            if epochs_no_improve >= patience:
+                print(f"Early stopping triggered. No improvement for {patience} epochs.")
+                break
     
+    if os.path.exists("saved_models/best_model.pth"):
+        print("Restoring best model weights...")
+        model.load_state_dict(torch.load("saved_models/best_model.pth"))
+
     # Log results to experiments/latest.json
     experiment_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     log_data = {
