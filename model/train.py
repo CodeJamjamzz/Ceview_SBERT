@@ -50,7 +50,7 @@ def setup_wandb(learning_rate, num_epochs, device, patience):
             "optimizer": "Adam",
             "loss_function": "BCELoss",
             "early_stopping_patience": patience,
-            "architecture": "SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Concatenate -> Linear(1152, 512) -> GELU -> Dropout(0.1) -> Linear(512, 8) -> Sigmoid (Second Attempt)"
+            "architecture": "SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Concatenate -> Linear(1152, 512) -> GELU -> LayerNorm(512) -> Dropout(0.1) -> Linear(512, 8) -> Sigmoid (Third Attempt)"
         }
     )
     return run
