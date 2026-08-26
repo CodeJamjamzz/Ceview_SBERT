@@ -9,6 +9,7 @@ import json
 import os
 import datetime
 import wandb
+import copy
 from .evaluate import evaluate_model
 from .model import get_model
 
@@ -70,6 +71,7 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
     best_acc = 0.0
     best_f1 = 0.0
     epochs_no_improve = 0
+    best_model_state = None
     
     for epoch in range(num_epochs):
         model.train()
@@ -119,10 +121,9 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
             best_f1 = val_f1
             epochs_no_improve = 0
             
-            # Save the best model weights so you can download/upload them later
-            os.makedirs('saved_models', exist_ok=True)
-            torch.save(model.state_dict(), "saved_models/best_model.pth")
-            print("New best model saved to saved_models/best_model.pth!")
+            # Save the best model weights in memory
+            best_model_state = copy.deepcopy(model.state_dict())
+            print("New best model state saved in memory!")
         else:
             epochs_no_improve += 1
             print(f"Early stopping counter: {epochs_no_improve} out of {patience}")
@@ -130,9 +131,9 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
                 print(f"Early stopping triggered. No improvement for {patience} epochs.")
                 break
     
-    if os.path.exists("saved_models/best_model.pth"):
+    if best_model_state is not None:
         print("Restoring best model weights...")
-        model.load_state_dict(torch.load("saved_models/best_model.pth"))
+        model.load_state_dict(best_model_state)
 
     # Log results to experiments/latest.json
     experiment_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
