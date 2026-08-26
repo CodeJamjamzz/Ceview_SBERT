@@ -61,8 +61,10 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
     wandb_run = setup_wandb(learning_rate, num_epochs, device, patience)
     
     # Track the model architecture and gradients
+    # By default log_freq is 1000 batches. Since this dataset is small (~69 batches/epoch), 
+    # we set it to 10 to ensure we actually capture the parameters.
     if wandb_run:
-        wandb.watch(model, log="all")
+        wandb.watch(model, log="all", log_freq=10)
     
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
