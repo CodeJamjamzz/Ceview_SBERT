@@ -28,8 +28,4 @@ As of our latest finalized attempt:
 * We have **not** yet attempted an "unfrozen" training run where the SBERT layers are allowed to learn and adjust to our specific tourism dataset.
 * *(Note: The label `sbert-unfrozen-final` is currently used as a naming convention placeholder in our integration docs, but the architecture itself remains frozen pending future experiments).*
 
-## 5. Evaluation Metric Bug Fix
-During our testing phase, we discovered and resolved a major calculation bug:
-* The model's final layer is a `Sigmoid`, meaning it outputs raw probabilities (0 to 1).
-* The evaluation script was accidentally using `nn.BCEWithLogitsLoss()`, which applies a second Sigmoid layer on top of the probabilities. This mathematically skewed the loss calculation, resulting in an artificially massive `test_loss` (e.g., `0.62`) despite having excellent Accuracy (78%) and F1 Scores (92%).
-* **The Fix**: We corrected the evaluation script to use `nn.BCELoss()`, which correctly expects probability inputs, bringing the `test_loss` down to match the `val_loss`.
+
