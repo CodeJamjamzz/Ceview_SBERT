@@ -38,7 +38,9 @@ def setup_wandb(learning_rate, num_epochs, device, patience):
     except Exception as e:
         print(f"Warning: W&B login failed. If you are offline or in Colab, you may need to authenticate. Error: {e}")
 
+    project_root = os.path.dirname(os.path.dirname(__file__))
     run = wandb.init(
+        dir=project_root,
         entity="jamiel062705-cit-university",
         project="CEVIEW_SBERT",
         config={
@@ -57,6 +59,7 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
     print(f"Starting training on {device} for {num_epochs} epochs with patience {patience}...")
     model = get_model().to(device)
     
+    project_root = os.path.dirname(os.path.dirname(__file__))
     # Initialize Weights & Biases run
     wandb_run = setup_wandb(learning_rate, num_epochs, device, patience)
     
@@ -155,8 +158,10 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
         "next_action": "review"
     }
     
-    os.makedirs('experiments', exist_ok=True)
-    with open('experiments/latest.json', 'w') as f:
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    experiments_dir = os.path.join(project_root, 'experiments')
+    os.makedirs(experiments_dir, exist_ok=True)
+    with open(os.path.join(experiments_dir, 'latest.json'), 'w') as f:
         json.dump(log_data, f, indent=2)
         
     print(f"Training complete. Results logged to experiments/latest.json")
