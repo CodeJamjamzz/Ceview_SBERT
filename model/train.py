@@ -176,12 +176,11 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
         
     print(f"Training complete. Results logged to experiments/latest.json")
     
-    # Finish the W&B run
+    # Keep the W&B run active so the notebook can log test metrics
     if wandb_run:
-        # Also log final summary metrics
+        # Log final validation summary metrics
         wandb_run.summary["best_val_loss"] = best_val_loss
         wandb_run.summary["best_accuracy"] = best_acc
         wandb_run.summary["best_f1_macro"] = best_f1
-        wandb_run.finish()
         
     return model
