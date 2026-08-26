@@ -47,7 +47,7 @@ def setup_wandb(learning_rate, num_epochs, device, patience):
             "learning_rate": learning_rate,
             "epochs": num_epochs,
             "device": device,
-            "optimizer": "Adam",
+            "optimizer": "AdamW",
             "loss_function": "BCELoss",
             "early_stopping_patience": patience,
             "architecture": "SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Concatenate -> Linear(1152, 512) -> GELU -> LayerNorm(512) -> Dropout(0.1) -> Linear(512, 8) -> Sigmoid (Third Attempt)"
@@ -70,7 +70,10 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
         wandb.watch(model, log="all", log_freq=10)
     
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.01)
+    
+    # Add learning rate scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2)
     
     best_val_loss = float('inf')
     best_acc = 0.0
@@ -110,10 +113,17 @@ def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0
         
         print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, Val F1: {val_f1:.4f}")
         
+        # Step the scheduler
+        scheduler.step(val_loss)
+        
+        # Get current learning rate for logging
+        current_lr = optimizer.param_groups[0]['lr']
+        
         # Log epoch-level metrics to W&B
         if wandb_run:
             wandb.log({
                 "epoch": epoch + 1,
+                "learning_rate": current_lr,
                 "train_loss": train_loss,
                 "val_loss": val_loss,
                 "val_accuracy": val_acc,
