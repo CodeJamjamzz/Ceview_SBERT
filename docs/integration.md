@@ -40,12 +40,65 @@
 When you download `best_model.pth` from Colab, you are downloading a dictionary of raw numbers (weights). The `.pth` file **does not** contain the structure/code of the model. To use it in a backend (like FastAPI, Flask, or Django), you must follow these steps:
 
 ### 1. Recreate the Architecture
-Your backend must contain a copy of `model.py`. You must instantiate the exact same "empty" model architecture first:
+Your backend needs the literal Python code that defines the `TourismClassifier` so it knows how to structure the "brain" before loading the weights. 
+
+**Copy and paste this exact code into your backend (e.g., `model.py`):**
 ```python
-from model.model import get_model
+import torch
+import torch.nn as nn
+from transformers import AutoModel
+
+class TourismClassifier(nn.Module):
+    def __init__(self, model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", hidden_size=512, num_classes=8):
+        super(TourismClassifier, self).__init__()
+        
+        # Load the SBERT backbone
+        self.sbert = AutoModel.from_pretrained(model_name)
+        
+        # MiniLM-L12 has hidden size of 384. Concatenating 3 embeddings -> 384 * 3 = 1152
+        sbert_out_dim = self.sbert.config.hidden_size
+        concat_dim = sbert_out_dim * 3
+        
+        # Classification head
+        self.classifier = nn.Sequential(
+            nn.Linear(concat_dim, hidden_size),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_size, num_classes),
+            nn.Sigmoid()
+        )
+
+    def mean_pooling(self, model_output, attention_mask):
+        """Mean Pooling - Take attention mask into account for correct averaging"""
+        token_embeddings = model_output[0] 
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
+    def forward(self, desc_input_ids, desc_attention_mask, uvp_input_ids, uvp_attention_mask, services_input_ids, services_attention_mask):
+        with torch.no_grad():
+            desc_out = self.sbert(input_ids=desc_input_ids, attention_mask=desc_attention_mask)
+            desc_emb = self.mean_pooling(desc_out, desc_attention_mask)
+            
+            uvp_out = self.sbert(input_ids=uvp_input_ids, attention_mask=uvp_attention_mask)
+            uvp_emb = self.mean_pooling(uvp_out, uvp_attention_mask)
+            
+            serv_out = self.sbert(input_ids=services_input_ids, attention_mask=services_attention_mask)
+            serv_emb = self.mean_pooling(serv_out, services_attention_mask)
+        
+        concatenated = torch.cat((desc_emb, uvp_emb, serv_emb), dim=1)
+        return self.classifier(concatenated)
+
+def get_model():
+    return TourismClassifier()
+```
+
+Then, in your main backend script, instantiate it:
+```python
+# Import the function you just copy-pasted
+from model import get_model 
 import torch
 
-device = "cpu" # Backend usually runs on CPU for inference unless you have a GPU server
+device = "cpu" # Backend usually runs on CPU for inference
 model = get_model().to(device)
 ```
 
