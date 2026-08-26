@@ -10,6 +10,8 @@ import os
 import datetime
 import wandb
 import copy
+import random
+import numpy as np
 from .evaluate import evaluate_model
 from .model import get_model
 
@@ -55,7 +57,21 @@ def setup_wandb(learning_rate, num_epochs, device, patience):
     )
     return run
 
+def set_seed(seed=42):
+    """
+    Locks all random seeds for PyTorch, NumPy, and Python to ensure reproducibility.
+    This guarantees that the model initialization and data shuffling are identical across runs.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
 def train_model(train_dataloader, val_dataloader, num_epochs=20, learning_rate=0.001, device="cpu", patience=5):
+    # Lock randomness to ensure reproducibility across different training attempts
+    set_seed(42)
+    
     print(f"Starting training on {device} for {num_epochs} epochs with patience {patience}...")
     model = get_model().to(device)
     

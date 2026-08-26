@@ -62,6 +62,11 @@ Instead, the recommended and implemented approach is to perform a **stratified 8
 - **Test (10% / ~138 examples):** A completely held-out set used only at the very end to provide an unbiased evaluation of the model's performance.
 
 A stratified split ensures that each class maintains roughly the same proportion across all three sets, ensuring that even the smallest classes have representation in the Test set.
+
+## Reproducibility (Random Seeds)
+Deep learning inherently relies on randomness (e.g., initial weight allocation, shuffling data, dropout). If left unchecked, training the exact same architecture twice will yield different results due to this random variance, making it impossible to confidently compare two different models.
+To fix this, a **crucial step** in this codebase is the `set_seed(42)` function called at the start of `train_model()`. This locks PyTorch, NumPy, and Python's random number generators. Because the randomness is completely deterministic, every run with identical configuration will yield identical results. This allows ML engineers to run a configuration just once and trust the result.
+
 ## Evaluation
 The `evaluate.py` script computes **Accuracy**, **Macro F1-Score**, and **Loss** to evaluate how well the model predicts across all 8 classes concurrently (using a `0.5` threshold).
 
