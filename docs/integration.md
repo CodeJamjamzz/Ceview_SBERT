@@ -39,11 +39,11 @@
 ## Loading the Model in the Backend
 When you download `best_model.pth` from Colab, you are downloading a dictionary of raw numbers (weights). The `.pth` file **does not** contain the structure/code of the model. To use it in a backend (like FastAPI, Flask, or Django), you must follow these steps:
 
-### 1. Recreate the Architecture (Attempt-4)
+### 1. Recreate the Architecture (sbert-unfrozen-final)
 Your backend needs the literal Python code that defines the `TourismClassifier` so it knows how to structure the "brain" before loading the weights. 
 
 > [!NOTE]
-> This specific architecture block corresponds exactly to the **"attempt-4"** run in Weights & Biases (which is the "Second Attempt" architecture configuration). You must use the `.pth` file downloaded from that exact training run.
+> This specific architecture block corresponds exactly to the **"sbert-unfrozen-final"** run in Weights & Biases (which is the "Second Attempt" architecture configuration). You must use the `.pth` file downloaded from that exact training run.
 
 **Copy and paste this exact code into your backend (e.g., `model.py`):**
 ```python
