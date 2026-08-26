@@ -16,10 +16,11 @@ During our experimentation, we explored and implemented several advanced techniq
 * **Learning Rate Schedulers (`ReduceLROnPlateau`)**: We explored using a scheduler to dynamically adjust the learning rate. If the `val_loss` stops improving (plateaus) for 2 epochs, the scheduler cuts the learning rate in half. This prevents the model from taking steps that are too large and bouncing out of the optimal minimum.
 * **Advanced Optimizers**: We experimented with swapping the standard `Adam` optimizer for `AdamW` (Adam with decoupled Weight Decay) to provide better regularization and prevent the model from overfitting on our small dataset.
 
-## 3. Reproducibility (Random Seeds)
-Deep learning is highly non-deterministic due to random weight initialization, data shuffling, and Dropout layers. To ensure that our experiments are perfectly comparable:
-* We implemented a `set_seed(42)` function that locks PyTorch, NumPy, and Python's random number generators.
-* This makes every run 100% deterministic. If a new configuration gets a better `val_loss`, we can confidently attribute it to the configuration changes rather than "lucky" random initialization, eliminating the need to train a single configuration multiple times to find an average.
+## 3. Reproducibility (Random Seeds) for High-Efficiency Testing
+Deep learning is highly non-deterministic due to random weight initialization, data shuffling, and Dropout layers. To ensure that our experiments are perfectly comparable, we "frozen" the randomness:
+* We implemented a `set_seed(42)` function that completely locks PyTorch, NumPy, and Python's random number generators at the start of every training run.
+* **Why this is crucial for efficiency**: By making every run 100% deterministic, we completely eliminate "lucky" or "unlucky" random initializations. This means we do not have to waste time and computing power training the exact same configuration 3 to 5 times just to find its average performance. 
+* **Comparing Models Easily**: Because the random variance is removed, we only need to train a new configuration exactly **once**. If Attempt B gets a lower `val_loss` than Attempt A, we can confidently and easily declare that the architecture/hyperparameter changes caused the improvement, making our testing phase incredibly fast and scientifically accurate.
 
 ## 4. Current Architecture Status (SBERT Frozen)
 As of our latest finalized attempt:
