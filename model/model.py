@@ -21,7 +21,6 @@ class TourismClassifier(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(concat_dim, hidden_size),
             nn.GELU(),
-            nn.LayerNorm(hidden_size),
             nn.Dropout(0.1),
             nn.Linear(hidden_size, num_classes),
             nn.Sigmoid()

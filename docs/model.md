@@ -30,11 +30,8 @@ The model outputs an array of 8 float values (scores from `0.0` to `1.0`), where
 **1. First Attempt Model Architecture:**
 The initial network followed this structure: `SBERT (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) -> Linear(1152, 512) -> ReLU -> Dropout(0.1) -> Linear(512, 8)`
 
-**2. Second Attempt Model Architecture:**
-The network followed this structure: `SBERT → Concatenate → Linear → GELU → Dropout → Linear → Sigmoid`
-
-**3. Third Attempt Model Architecture (Current):**
-The current network follows this structure: `SBERT → Concatenate → Linear → GELU → LayerNorm → Dropout → Linear → Sigmoid`
+**2. Second Attempt Model Architecture (Current):**
+The current network follows this structure: `SBERT → Concatenate → Linear → GELU → Dropout → Linear → Sigmoid`
 
 ## Interpreting Confidence
 - The scores (0-1) indicate the model's confidence that the business belongs to a category.
